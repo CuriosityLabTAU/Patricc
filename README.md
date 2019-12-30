@@ -81,3 +81,15 @@ Explanation:
 true: where to go if condition met
 false: where to fo if condition not met
 timeout: where to go if duration has passed
+
+## Run the flow
+Run RunFlow.py
+
+1. Press Prepare.
+If everything works, "OK"
+
+2. Select with flow text file to run
+The robot and the props will be written
+
+3. Place the correct props and press refresh
+If everything works, "Run"
