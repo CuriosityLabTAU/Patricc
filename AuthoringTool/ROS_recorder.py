@@ -45,6 +45,12 @@ class Application(tk.Frame):
         self.created = False
         self.create_widgets()
 
+    def get_path_name(self, sub_path):
+        if 'home' in self.text_robot_name.get():
+            return self.text_robot_name.get() + '/' + sub_path + '/'
+        else:
+            return sub_path + '/' + self.text_robot_name.get() + '/'
+
     def rfid_callback(self, data):
         msg = data.data
         for i in range(5):
@@ -71,7 +77,7 @@ class Application(tk.Frame):
         self.label_robot_name.grid(column=0, row=0)
 
         self.text_robot_name = tk.Entry(self.frame_robot, width=50)
-        self.text_robot_name.insert(tk.END, 'hri_01')
+        self.text_robot_name.insert(tk.END, '/home/gorengordon/PycharmProjects/run_general_robot_script/neo') #'hri_01')
         self.text_robot_name.grid(column=1, row=0)
 
         self.button_robot_set = tk.Button(self.frame_robot, text='set', command=self.set_robot)
@@ -243,7 +249,8 @@ class Application(tk.Frame):
 
     def set_robot(self):
         # get all files in directory
-        robot_sounds_path = 'sounds/' + self.text_robot_name.get() + '/'
+        robot_sounds_path = self.get_path_name('sounds')
+
         self.sound_file_names = [f for f in listdir(robot_sounds_path) if isfile(join(robot_sounds_path, f)) and '.mp3' in f]
         if len(self.sound_file_names) > 0:
             self.sound_file_names.sort()
@@ -254,12 +261,13 @@ class Application(tk.Frame):
                                                                     command=lambda v=value: self.set_general_file(v))
 
             self.lip_file_names = [f for f in listdir(robot_sounds_path) if isfile(join(robot_sounds_path, f)) and '.csv' in f]
-            self.lip_file_names.sort()
-            self.text_loadlip_file.children['menu'].delete(0, "end")
-            self.lip_file_variable.set(self.lip_file_names[0]) # default value
-            for value in self.lip_file_names:
-                self.text_loadlip_file.children['menu'].add_command(label=value,
-                                                                    command=lambda v=value: self.set_general_file(v))
+            if len(self.lip_file_names) > 0:
+                self.lip_file_names.sort()
+                self.text_loadlip_file.children['menu'].delete(0, "end")
+                self.lip_file_variable.set(self.lip_file_names[0]) # default value
+                for value in self.lip_file_names:
+                    self.text_loadlip_file.children['menu'].add_command(label=value,
+                                                                        command=lambda v=value: self.set_general_file(v))
 
     def set_general_file(self, value):
         self.sound_file_variable.set(value[:-3] + 'mp3')
@@ -279,7 +287,7 @@ class Application(tk.Frame):
         # self.play()
 
     def say_hello(self):
-        pygame.mixer.music.load('sounds/jay_hello.mp3')
+        pygame.mixer.music.load('sounds/fuzzy_hello.mp3')
         pygame.mixer.music.play()
 
     def count_recording(self, duration=0, *args):
@@ -333,14 +341,15 @@ class Application(tk.Frame):
 
     def play_lip(self, arg1=None, arg2=None):
         time.sleep(float(self.text_lip_offset.get()))
-        old_item = self.lip_angle[0]
-        for iter in range(1, len(self.lip_angle)):
-            new_item = self.lip_angle[iter]
-            current_time = new_item[0]
-            dt = (new_item[0] - old_item[0])
-            time.sleep(dt)
-            old_item = new_item
-            self.publishers['/lip_angles'].publish(new_item[1])
+        if len(self.lip_angle) > 0:
+            old_item = self.lip_angle[0]
+            for iter in range(1, len(self.lip_angle)):
+                new_item = self.lip_angle[iter]
+                current_time = new_item[0]
+                dt = (new_item[0] - old_item[0])
+                time.sleep(dt)
+                old_item = new_item
+                self.publishers['/lip_angles'].publish(new_item[1])
 
     def play_sound_and_lip(self):
         self.load_files()
@@ -349,11 +358,11 @@ class Application(tk.Frame):
 
     def stop(self):
         if self.radio_value.get() == 2:  # block
-            self.filename = 'blocks/' + self.text_robot_name.get() + '/' + self.text_save_file.get()
+            self.filename = self.get_path_name('blocks') + self.text_save_file.get()
         elif self.radio_value.get() == 1:
             self.filename = 'bags/' + self.text_save_file.get()
         elif self.radio_value.get() == 3:  # mixed
-            inter_block_filename = 'blocks/' + self.text_robot_name.get() + '/' + self.text_save_file.get() + '_inter_block'
+            inter_block_filename = self.get_path_name('blocks') + self.text_save_file.get() + '_inter_block'
             with open(inter_block_filename, 'w') as output:
                 for ib in self.inter_block:
                     output.write('%2.3f,%s,%s\n' %(ib[0], ib[1], ib[2]))
@@ -391,16 +400,16 @@ class Application(tk.Frame):
         if play_bag:
             self.bag_filename = 'bags/' + self.text_loadbag_file.get()
         if play_lip:
-            self.lip_filename = 'sounds/' + self.text_robot_name.get() + '/' + self.lip_file_variable.get()
+            self.lip_filename = self.get_path_name('sounds') + self.lip_file_variable.get()
         if play_sound:
-            self.sound_filename = 'sounds/'+ self.text_robot_name.get() + '/'  + self.sound_file_variable.get()
+            self.sound_filename = self.get_path_name('sounds') + self.sound_file_variable.get()
 
         if play_bag:
             with open(self.bag_filename, 'rb') as input:
                 self.play_bag = pickle.load(input)
 
+        self.lip_angle = []
         if play_lip:
-            self.lip_angle = []
             with open(self.lip_filename, 'rb') as input:
                 self.lip_reader = csv.reader(input)  # get all topics
                 i = 0.0
@@ -462,7 +471,7 @@ class Application(tk.Frame):
         thread.start_new_thread(self.replay_and_record_thread, (None, None))
 
     def replay_and_record_thread(self, arg1=None, arg2=None):
-        self.block_filename = 'blocks/' + self.text_robot_name.get() + '/' + self.text_save_file.get()
+        self.block_filename = self.get_path_name('blocks') + self.text_save_file.get()
         with open(self.block_filename, 'rb') as input:
             self.play_block = pickle.load(input)
 
@@ -477,7 +486,7 @@ class Application(tk.Frame):
             sound_offset = self.play_block[0][1]
         else:
             if self.loadsound_value.get() == 1:
-                self.sound_filename = 'sounds/' + self.text_robot_name.get() + '/' + self.sound_file_variable.get()
+                self.sound_filename = self.get_path_name('sounds') + self.sound_file_variable.get()
                 with open(self.sound_filename, 'rb') as input:
                     pygame.mixer.music.load(self.sound_filename)
                     self.rec_bag[0] = (self.sound_filename, 0.0)
@@ -514,7 +523,7 @@ class Application(tk.Frame):
         if self.sound_filename:
             pygame.mixer.music.stop()
 
-        self.filename = 'blocks/' + self.text_robot_name.get() + '/' + self.text_save_file.get() + '.new'
+        self.filename = self.get_path_name('blocks') + self.text_save_file.get() + '.new'
         self.rec = False
 
         t0 = self.rec_bag[0][0]
@@ -535,7 +544,7 @@ class Application(tk.Frame):
         thread.start_new_thread(self.replay_block_thread, (None, None))
 
     def replay_block_thread(self, arg1=None, arg2=None):
-        self.block_filename = 'blocks/' + self.text_robot_name.get() + '/' + self.text_save_file.get()
+        self.block_filename = self.get_path_name('blocks') + self.text_save_file.get()
         with open(self.block_filename, 'rb') as input:
             self.play_block = pickle.load(input)
 
