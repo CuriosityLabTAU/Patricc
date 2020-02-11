@@ -8,8 +8,7 @@ import sys
 import time
 import subprocess
 from flow import *
-from PIL import Image
-
+from PIL import Image, ImageTk
 
 
 # block_player = play_block()
@@ -67,11 +66,13 @@ class SessionGUI(tk.Frame):
         self.session_file_names = self.get_session_files()
         self.session_file_variable = StringVar(self)
         self.session_file_variable.set('')  # default value
-        # self.text_load_session_file = OptionMenu(self.frame_session,
-        #                                          self.session_file_variable, *self.session_file_names,
-        #                                          command=self.update_session_list)
-        # self.text_load_session_file.grid(column=1, row=0)
-        # self.text_load_session_file.configure(state=DISABLED)
+        #OG
+        self.text_load_session_file = OptionMenu(self.frame_session,
+                                                 self.session_file_variable, *self.session_file_names,
+                                                 command=self.update_session_list)
+        self.text_load_session_file.grid(column=1, row=0)
+        self.text_load_session_file.configure(state=DISABLED)
+        #OG
 
         self.label_robot = tk.Label(self.frame_session, text='Robot:')
         self.label_robot.grid(column=0, row=1)
@@ -79,7 +80,10 @@ class SessionGUI(tk.Frame):
         self.robot_name_variable.set('')
         self.label_robot_name = tk.Label(self.frame_session, textvariable=self.robot_name_variable)
         self.label_robot_name.grid(column=1, row=1)
-        self.robot_image = tk.PhotoImage(file='./images/jay.png')
+
+        self.original = Image.open('./images/robot.png')
+        self.resized = self.original.resize((100, 100), Image.ANTIALIAS)
+        self.robot_image = ImageTk.PhotoImage(self.resized)
         self.label_robot_image = tk.Label(self.frame_session, image=self.robot_image, width=100, height=100)
         self.label_robot_image.grid(column=2, row=1)
 
@@ -175,14 +179,18 @@ class SessionGUI(tk.Frame):
                 if step_desc[0].lstrip() == 'robot':
                     self.flow['robot'] = step_desc[1].lstrip()
                     self.robot_name_variable.set(self.flow['robot'])
-                    self.robot_image = tk.PhotoImage(file='./images/%s.png' % self.flow['robot'])
+                    self.original = Image.open('./images/%s.png' % self.flow['robot'])
+                    self.resized = self.original.resize((100, 100), Image.ANTIALIAS)
+                    self.robot_image = ImageTk.PhotoImage(self.resized)
                     self.label_robot_image.configure(image=self.robot_image)
                     self.label_robot_image.image = self.robot_image
                 elif step_desc[0].lstrip() == 'props':
                     self.flow['props'] = step_desc[1].lstrip().split(' ')
                     for i, prop_name in enumerate(self.flow['props']):
                         self.props_name_variable[i].set(prop_name.lstrip())
-                        self.prop_image[i] = tk.PhotoImage(file='./images/jay.png')
+                        self.original = Image.open('./images/%s.jpg' % self.flow['props'][i])
+                        self.resized = self.original.resize((100, 100), Image.ANTIALIAS)
+                        self.prop_image[i] = ImageTk.PhotoImage(self.resized)
                         self.label_props_image[i].configure(image=self.prop_image[i])
                         self.label_props_image[i].image = self.prop_image[i]
 
@@ -204,9 +212,16 @@ class SessionGUI(tk.Frame):
         found_all = True
         for i in range(len(self.props_name_variable)):
             if self.props_name_variable[i].get() in found_props:
-                self.prop_check_image[i] = tk.PhotoImage(file='./images/v.png')
+                #self.prop_check_image[i] = tk.PhotoImage(file='./images/v.png')
+
+                self.original = Image.open('./images/v.png')
+                self.resized = self.original.resize((50, 50), Image.ANTIALIAS)
+                self.prop_check_image[i] = ImageTk.PhotoImage(self.resized)
+
             else:
-                self.prop_check_image[i] = tk.PhotoImage(file='./images/x.png')
+                self.original = Image.open('./images/x.png')
+                self.resized = self.original.resize((50, 50), Image.ANTIALIAS)
+                self.prop_check_image[i] = ImageTk.PhotoImage(self.resized)
                 found_all = False
             self.label_props_check_image[i].configure(image=self.prop_check_image[i])
             self.label_props_check_image[i].image = self.prop_check_image[i]

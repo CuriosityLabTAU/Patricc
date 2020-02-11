@@ -1,5 +1,5 @@
 robot, fuzzy
 path, demo
-props, avocado banana lemon sheep fish
+props, sheep goat donkey rooster fish
 start, block, fuzzy_hello, 2
 2, block, fuzzy_goodbye see you soon, end
