@@ -27,7 +27,7 @@ scripts = {
     'roscore': 'roscore',
     'rfid': 'rosrun rosserial_python serial_node.py /dev/ttyACM0',
     'expose': 'python ./expose.py',
-    'motion_control': 'python ./motion_control.py'
+    #'motion_control': 'python ./motion_control.py'
 }
 #
 

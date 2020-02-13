@@ -16,6 +16,7 @@ import csv
 import itertools
 # from affdex_msgs.msg import AffdexFrameInfo
 from geometry_msgs.msg import PoseStamped
+from flow.debug import robot_parameters
 
 from threading import Timer
 
@@ -26,23 +27,28 @@ logging.basicConfig(level=logging.DEBUG)
 class MotionControl:
 
     def __init__(self):
-        #self.motor_list = [1,2,5,7,6,8]
-        #self.motor_list = [1,2,5,7]
-        self.motor_list  = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
-        self.robot_angle_range = [[0.0, 5.0], #[1.1, 3.9],
-                                  [2.8, 1.2],
-                                  [3.1, 3.3], [1.8, 2.0], #[1.8, 2.0],
-                                  [4.1, 0.9], [1.3, 3],#                                   [4.1, 0.9], [1.3, 3],
-                                  [1, 4.1], [2.5, 3.75]]
-        self.sensor_angle_range = [[-np.pi, np.pi], [0, np.pi/2],
-                                   [-0.2, 0.2], [0, 254],
-                                   [-np.pi/2, np.pi/2], [np.pi/2, 0],
-                                   [-np.pi/2, np.pi/2], [0, np.pi/2]]
-        # self.robot_kinect_angles = [0, 1, 0, 0, 2, 3, 4, 5]
-        self.robot_kinect_angles = [0, 1, 0, 0, 4, 5, 2, 3] # complete mirror
-        self.skeleton_angles = []
-        self.motor_speeds = [1, 1, 6, 6, 6, 6, 6, 6]#[1, 1, 4, 4, 4, 4, 4, 4]# #[1, 1, 1, 4, 1, 1, 1, 1] #[3, 3, 5, 3, 3, 3, 3, 3]
 
+        self.motor_list  = robot_parameters.motor_list
+        self.robot_angle_range = robot_parameters.robot_angle_range
+        self.sensor_angle_range = robot_parameters.sensor_angle_range
+        self.robot_kinect_angles = robot_parameters.robot_kinect_angles
+        self.motor_speeds = robot_parameters.motor_speeds
+
+        # self.motor_list  = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
+        # self.robot_angle_range = [[0.0, 5.0], #[1.1, 3.9],
+        #                           [2.8, 1.2],
+        #                           [3.1, 3.3], [1.8, 2.0], #[1.8, 2.0],
+        #                           [4.1, 0.9], [1.3, 3],#                                   [4.1, 0.9], [1.3, 3],
+        #                           [1, 4.1], [2.5, 3.75]]
+        # self.sensor_angle_range = [[-np.pi, np.pi], [0, np.pi/2],
+        #                            [-0.2, 0.2], [0, 254],
+        #                            [-np.pi/2, np.pi/2], [np.pi/2, 0],
+        #                            [-np.pi/2, np.pi/2], [0, np.pi/2]]
+        # # self.robot_kinect_angles = [0, 1, 0, 0, 2, 3, 4, 5]
+        # self.robot_kinect_angles = [0, 1, 0, 0, 4, 5, 2, 3] # complete mirror
+        # self.motor_speeds = [1, 1, 6, 6, 6, 6, 6, 6]#[1, 1, 4, 4, 4, 4, 4, 4]# #[1, 1, 1, 4, 1, 1, 1, 1] #[3, 3, 5, 3, 3, 3, 3, 3]
+
+        self.skeleton_angles = []
         self.robot_angles = np.zeros([8])
         for i, rar in enumerate(self.robot_angle_range):
             self.robot_angles[i] = np.mean(rar)

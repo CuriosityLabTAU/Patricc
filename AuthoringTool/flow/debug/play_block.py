@@ -10,11 +10,12 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 import csv
 from scipy.interpolate import interp1d
-from scipy.signal import butter, lfilter, filtfilt  #omer
+from scipy.signal import butter, lfilter, filtfilt
 import matplotlib.pyplot as plt
 from datetime import datetime
 from map_props import *
 from copy import copy
+import robot_parameters
 
 
 
@@ -44,24 +45,32 @@ class play_block():
         self.duration = 0.0
 
         self.lip_angle = []
-        self.motor_list  = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
-        self.robot_angle_range = [[0.0, 5.0], #[1.1, 3.9],
-                                  [2.8, 1.6],
-                                  [2, 3.3], [1.8, 2.5], #[2.2, 2.5]#[1.8, 2.5], #[2.5, 3.5], #
-                                  [4.1, 0.9], [1.3, 3],
-                                  [1, 4.1], [2.5, 3.75]]
-        self.sensor_angle_range = [[-np.pi, np.pi], [0, np.pi/2],
-                                   [-0.2, 0.2], [0, 254],
-                                   [-np.pi/2, np.pi/2], [np.pi/2, 0],
-                                   [-np.pi/2, np.pi/2], [0, np.pi/2]]
-        self.robot_kinect_angles = [0, 1, 0, 0, 2, 3, 4, 5]
 
-        self.robot_motors_no_mouth = [0, 1, 2, 4, 5, 6, 7]
-        self.robot_motor_mouth = 4
+        motor_list  = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
+        self.robot_angle_range = robot_parameters.robot_angle_range
+        self.sensor_angle_range = robot_parameters.sensor_angle_range
+        self.robot_kinect_angles = robot_parameters.robot_kinect_angles
+        self.robot_motors_no_mouth = robot_parameters.robot_motors_no_mouth
+        self.robot_motor_mouth = robot_parameters.robot_motor_mouth
+        self.motor_speed = robot_parameters.motor_speed
 
-        self.motor_speed = [1] * 8
+
+        # self.motor_list  = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
+        # self.robot_angle_range = [[0.0, 5.0], #[1.1, 3.9],
+        #                           [2.8, 1.6],
+        #                           [2, 3.3], [1.8, 2.5], #[2.2, 2.5]#[1.8, 2.5], #[2.5, 3.5], #
+        #                           [4.1, 0.9], [1.3, 3],
+        #                           [1, 4.1], [2.5, 3.75]]
+        # self.sensor_angle_range = [[-np.pi, np.pi], [0, np.pi/2],
+        #                            [-0.2, 0.2], [0, 254],
+        #                            [-np.pi/2, np.pi/2], [np.pi/2, 0],
+        #                            [-np.pi/2, np.pi/2], [0, np.pi/2]]
+        # self.robot_kinect_angles = [0, 1, 0, 0, 2, 3, 4, 5]
+        # self.robot_motors_no_mouth = [0, 1, 2, 4, 5, 6, 7]
+        # self.robot_motor_mouth = 4
+        # self.motor_speed = [0.4, 0.4, 2, 7, 5, 5, 5, 5]
+
         rospy.init_node('block_player')
-        # rospy.spin()
 
     def test_motors(self):
         the_range = np.sin(np.linspace(0.0, 2.0 * np.pi, 200)) * 0.5 + 0.5
@@ -70,7 +79,7 @@ class play_block():
             new_command = CommandPosition()
             new_command.id = [i for i in range(1, 9)]
             new_command.angle = [self.robot_angle_range[i][0] + the_range[j] * (self.robot_angle_range[i][1] - self.robot_angle_range[i][0]) for i in range(8)]
-            new_command.speed = [2] * 8
+            new_command.speed = self.motor_speed
 
             self.publisher.publish(new_command)
             time.sleep(dt)
@@ -172,12 +181,8 @@ class play_block():
             real_current_time = (datetime.now() - real_first_time).total_seconds()
             dt = current_time - real_current_time
 
-            # print(real_current_time, current_time, dt)
             if dt > 0.001:
                 time.sleep(dt)
-                #print(1.0 / dt)
-                # calculate speed
-                # print(dt, np.array(new_item[2].angle) - np.array(old_item[2].angle))
 
                 new_speed = list(np.abs(np.array(new_item[2].angle) - np.array(old_item[2].angle)) / 2.0)
 
@@ -189,12 +194,8 @@ class play_block():
                 new_command = CommandPosition()
                 new_command.id = [i for i in range(1, 9)]
                 new_command.angle = new_item[2].angle
-                # new_command.angle[3] = self.map_angles([1.8, 3.5], [1.8, 2.5], new_command.angle[3])
 
-                #print new_item[2].angle[3]
-                # new_command.speed = None #new_speed #self.motor_speed
-                # new_command.speed = [5]*len(new_item[2].angle)
-                new_command.speed = [0.4, 0.4, 2, 7, 5, 5, 5, 5]
+                new_command.speed = self.motor_speed
                 self.publisher.publish(new_command)
 
                 real_output.append(new_command.angle)
@@ -219,8 +220,7 @@ class play_block():
             pygame.mixer.music.stop()
             print('done playing!')
         np_real_output = np.array(real_output)
-        #plt.plot(np_real_output)
-        #plt.show()
+
 
     def play_msg_list(self, msg_list, stop_on_sound=False):
         first_item = msg_list[0]
@@ -236,12 +236,8 @@ class play_block():
             real_current_time = (datetime.now() - real_first_time).total_seconds()
             dt = current_time - real_current_time
 
-            # print(real_current_time, current_time, dt)
             if dt > 0.001:
                 time.sleep(dt)
-                #print(1.0 / dt)
-                # calculate speed
-                # print(dt, np.array(new_item[2].angle) - np.array(old_item[2].angle))
 
                 new_speed = list(np.abs(np.array(new_item[2].angle) - np.array(old_item[2].angle)) / 2.0)
 
@@ -250,12 +246,7 @@ class play_block():
                 new_command = CommandPosition()
                 new_command.id = [i for i in range(1, 9)]
                 new_command.angle = new_item[2].angle
-                # new_command.angle[3] = self.map_angles([1.8, 3.5], [1.8, 2.5], new_command.angle[3])
-
-                #print new_item[2].angle[3]
-                # new_command.speed = None #new_speed #self.motor_speed
-                # new_command.speed = [5]*len(new_item[2].angle)
-                new_command.speed = [0.4, 0.4, 2, 7, 5, 5, 5, 5]
+                new_command.speed = self.motor_speed
                 self.publisher.publish(new_command)
 
                 real_output.append(new_command.angle)
@@ -280,8 +271,6 @@ class play_block():
             pygame.mixer.music.stop()
             print('done playing!')
         np_real_output = np.array(real_output)
-        #plt.plot(np_real_output)
-        #plt.show()
 
     def play_motor_commands(self, motor_commands, stop_on_sound=False):
         first_item = motor_commands[0, :]
@@ -303,12 +292,8 @@ class play_block():
                 new_command = CommandPosition()
                 new_command.id = [i for i in range(1, 9)]
                 new_command.angle = new_item[1:]
-                # new_command.angle[3] = self.map_angles([1.8, 3.5], [1.8, 2.5], new_command.angle[3])
-                # new_command.angle[3] = new_command.angle[3] + 0.5 #OG
                 print new_command.angle
-                # new_command.speed = None #new_speed #self.motor_speed
-                # new_command.speed = [5]*len(new_item[2].angle)
-                new_command.speed = [0.4, 0.4, 2, 3, 5, 5, 5, 5] #[0.4, 0.4, 2, 7, 5, 5, 5, 5]OG
+                new_command.speed = self.motor_speed
                 self.publisher.publish(new_command)
 
                 if self.sound_offset is not None:
@@ -349,21 +334,12 @@ class play_block():
         temp_motor_commands = np.copy(motor_commands)
         for d in range(0, motor_commands.shape[1]):
             if d != 4:
-                #temp_motor_commands[:, d] = convolve(motor_commands[:, d], win, mode='same') / sum(win)
-                # the filter
                 cutoff = 0.25
                 order = 6
                 b, a = butter(order, cutoff)#, btype='lowpass', analog=True)
                 temp_motor_commands[:, d] = filtfilt(b, a,motor_commands[:, d])
-            #else:
-            #    temp_motor_commands[:, d] = np.ones(temp_motor_commands[:, d].shape) * 2.3
 
-        #filtered_motor_commands = np.copy(motor_commands)
-        #filtered_motor_commands[window_size:-window_size, :] = temp_motor_commands[window_size:-window_size, :]
         filtered_motor_commands = temp_motor_commands
-        # plt.plot(motor_commands[:,0], motor_commands[:,6], 'x')
-        # plt.plot(filtered_motor_commands[:,0], filtered_motor_commands[:,6],  'o')
-        # plt.show()
 
         return filtered_motor_commands
 
@@ -372,9 +348,7 @@ class play_block():
             motor_commands = self.convert_to_motor_commands()
         filtered_motor_commands = self.edit(motor_commands)
         self.play_motor_commands(motor_commands=filtered_motor_commands, stop_on_sound=stop_on_sound)
-        # self.play_motor_commands(motor_commands=motor_commands, stop_on_sound=stop_on_sound)
 
-    # sound and lip things
     def load_files(self):
         self.lip_angle = []
         if self.lip_filename:
@@ -531,14 +505,6 @@ class play_block():
 
                 behavioral_velocity_profile[v_zero[t_pose_start]:v_zero[t_pose_end]] = behavioral_pose
 
-                # plt.plot(v_pose)
-                # plt.title('area: %2.3f, num_points: %d' % (np.sum(v_pose), v_pose.shape[0]))
-                # plt.show()
-                # plt.plot(behavioral_pose)
-                # plt.title('area: %2.3f, num_points: %d' % (np.sum(behavioral_pose), behavioral_pose.shape[0]))
-                # plt.show()
-                # print('done')
-
             plt.plot(velocty_profiles)
             plt.title('area: %2.3f, num_points: %d' % (np.sum(velocty_profiles), velocty_profiles.shape[0]))
             #plt.show()
@@ -553,13 +519,4 @@ class play_block():
 
         return behavioral_motor_commands
 
-
-# block_player = play_block()
-# block_player.test_motors()
-# block_player.lip_filename = 'sounds/fuzzy/fuzzy_banana.csv'
-# block_player.sound_filename = 'sounds/fuzzy/fuzzy_banana.mp3'
-# block_player.load_block(block_filename='blocks/point_1.new')
-# motor_commands = block_player.convert_to_motor_commands()
-# filtered_motor_commands = block_player.edit(motor_commands)
-# block_player.play(motor_commands=filtered_motor_commands)
 
