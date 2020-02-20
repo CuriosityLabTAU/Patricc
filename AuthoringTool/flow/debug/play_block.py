@@ -46,29 +46,13 @@ class play_block():
 
         self.lip_angle = []
 
-        motor_list  = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
+        self.motor_list = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
         self.robot_angle_range = robot_parameters.robot_angle_range
         self.sensor_angle_range = robot_parameters.sensor_angle_range
         self.robot_kinect_angles = robot_parameters.robot_kinect_angles
         self.robot_motors_no_mouth = robot_parameters.robot_motors_no_mouth
         self.robot_motor_mouth = robot_parameters.robot_motor_mouth
         self.motor_speed = robot_parameters.motor_speed
-
-
-        # self.motor_list  = {'skeleton': [0, 1, 4, 5, 6, 7], 'head_pose': [2], 'lip': [3], 'full': [0, 1, 2, 3, 4, 5, 6, 7], 'full_idx': [1, 2, 3, 4, 5, 6, 7, 8]}
-        # self.robot_angle_range = [[0.0, 5.0], #[1.1, 3.9],
-        #                           [2.8, 1.6],
-        #                           [2, 3.3], [1.8, 2.5], #[2.2, 2.5]#[1.8, 2.5], #[2.5, 3.5], #
-        #                           [4.1, 0.9], [1.3, 3],
-        #                           [1, 4.1], [2.5, 3.75]]
-        # self.sensor_angle_range = [[-np.pi, np.pi], [0, np.pi/2],
-        #                            [-0.2, 0.2], [0, 254],
-        #                            [-np.pi/2, np.pi/2], [np.pi/2, 0],
-        #                            [-np.pi/2, np.pi/2], [0, np.pi/2]]
-        # self.robot_kinect_angles = [0, 1, 0, 0, 2, 3, 4, 5]
-        # self.robot_motors_no_mouth = [0, 1, 2, 4, 5, 6, 7]
-        # self.robot_motor_mouth = 4
-        # self.motor_speed = [0.4, 0.4, 2, 7, 5, 5, 5, 5]
 
         rospy.init_node('block_player')
 
