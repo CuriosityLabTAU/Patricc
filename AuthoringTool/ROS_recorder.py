@@ -77,7 +77,7 @@ class Application(tk.Frame):
         self.label_robot_name.grid(column=0, row=0)
 
         self.text_robot_name = tk.Entry(self.frame_robot, width=50)
-        self.text_robot_name.insert(tk.END, '/home/gorengordon/PycharmProjects/run_general_robot_script/neo') #'hri_01')
+        self.text_robot_name.insert(tk.END, '/home/gorengordon/PycharmProjects/run_general_robot_script/roboroots/02_tooty') #'hri_01')
         self.text_robot_name.grid(column=1, row=0)
 
         self.button_robot_set = tk.Button(self.frame_robot, text='set', command=self.set_robot)
