@@ -1,0 +1,27 @@
+robot, fuzzy
+path, /home/curious/PycharmProjects/run_general_robot_script/roboroots/01_fuzzy
+props, none none none none none
+start, block, Fuzzy 01, 2
+2, block, Fuzzy 02, 3
+3, block, Fuzzy 03, 4
+4, block, Fuzzy 04, 5
+5, block, Fuzzy 05, 6
+6, block, Fuzzy 06, 7
+7, block, Fuzzy 07, 8
+8, block, Fuzzy 08, 9
+9, block, Fuzzy 09, 10
+10, block, Fuzzy 10, 11
+11, block, Fuzzy 11, 12
+12, block, Fuzzy 12, 13
+13, block, Fuzzy 13, 14
+14, block, Fuzzy 14, 15
+15, block, Fuzzy 15, 16
+16, block, Fuzzy 16, 17
+17, block, Fuzzy 17, 18
+18, block, Fuzzy 18, 19
+19, block, Fuzzy 19, 20
+20, block, Fuzzy 20, 21
+21, block, Fuzzy 21, 22
+22, block, Fuzzy 22, end
+
+

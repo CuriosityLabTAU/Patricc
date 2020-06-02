@@ -16,6 +16,7 @@ from datetime import datetime
 from map_props import *
 from copy import copy
 import robot_parameters
+import os
 
 
 
@@ -30,7 +31,8 @@ class play_block():
         self.rfid_change = [None for i in range(5)]
         self.is_rfid_change = False
 
-        self.publisher = rospy.Publisher('/dxl/command_position', CommandPosition, queue_size=10)
+        # self.publisher = rospy.Publisher('/dxl/command_position', CommandPosition, queue_size=10)
+        self.publisher = rospy.Publisher('patricc_motion_control', CommandPosition, queue_size=10)
         self.rifd_sub = rospy.Subscriber('/rfid', String, self.callback)
 
         pygame.init()
@@ -103,10 +105,21 @@ class play_block():
         if not self.sound_filename:
             self.sound_filename = play_block[0][0]
             if self.sound_filename:
+                # GG
+                # check if exists, if not, override path
                 self.sound_filename = self.base_path + self.sound_filename
+                if not os.path.exists(self.sound_filename):
+                    only_file = self.sound_filename.split('/')[-1]
+                    self.sound_filename = self.base_path + 'sounds/' + only_file
                 self.sound_offset = play_block[0][1]
             else:
                 self.sound_offset = None
+
+        # GG
+        if self.sound_filename:
+            self.lip_filename = self.sound_filename[:-3] + 'csv'
+            if not os.path.exists(self.lip_filename):
+                self.lip_filename = None
         self.load_files()
 
         if self.lip_angle:
@@ -276,7 +289,11 @@ class play_block():
                 new_command = CommandPosition()
                 new_command.id = [i for i in range(1, 9)]
                 new_command.angle = new_item[1:]
-                print new_command.angle
+                # ROBOTROOTS DEBUG
+                new_command.angle[4] -= 3.14129 / 2.0
+                new_command.angle[6] += 3.14129 / 2.0
+
+                # print new_command.angle
                 new_command.speed = self.motor_speed
                 self.publisher.publish(new_command)
 

@@ -39,7 +39,15 @@ class FlowNode:
                 if step_desc[0].lstrip() == 'robot':
                     self.flow['robot'] = step_desc[1].lstrip() + '/'
                 elif step_desc[0].lstrip() == 'path':
-                    self.flow['path'] = step_desc[1].lstrip() + '/'
+                    # GG
+                    # if path is outside, change the base path and path, to accomodate
+                    # the final path sound be ~path/sounds, ~path/blocks
+                    if 'home' in step_desc[1].lstrip():
+                        self.base_path = step_desc[1].lstrip() + '/'
+                        self.flow['path'] = ''
+                        FlowNode.block_player.base_path = self.base_path
+                    else:
+                        self.flow['path'] = step_desc[1].lstrip() + '/'
                 elif step_desc[0].lstrip() == 'props':
                     self.flow['props'] = step_desc[1].lstrip().split(' ')
                 elif step_desc[1].lstrip() == 'wait':
