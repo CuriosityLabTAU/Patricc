@@ -1,3 +1,10 @@
+
+
+#!/usr/bin/env python
+from dxl import *
+from dxl.dxlchain import DxlChain
+import logging
+
 import pickle
 import pygame
 import time
@@ -30,9 +37,8 @@ class play_block():
         self.rfid_prev = [None for i in range(5)]
         self.rfid_change = [None for i in range(5)]
         self.is_rfid_change = False
-
-        # self.publisher = rospy.Publisher('/dxl/command_position', CommandPosition, queue_size=10)
-        self.publisher = rospy.Publisher('patricc_motion_control', CommandPosition, queue_size=10)
+        print '123123123'
+        ###self.publisher = rospy.Publisher('patricc_motion_control', CommandPosition, queue_size=10)
         self.rifd_sub = rospy.Subscriber('/rfid', String, self.callback)
 
         pygame.init()
@@ -56,7 +62,14 @@ class play_block():
         self.robot_motor_mouth = robot_parameters.robot_motor_mouth
         self.motor_speed = robot_parameters.motor_speed
 
-        rospy.init_node('block_player')
+        chain=DxlChain("/dev/ttyUSB0",rate=3000000)
+
+        # Load all the motors and obtain the list of IDs
+        motors=chain.get_motor_list() # Discover all motors on the chain and return their IDs
+        print motors
+        chain.goto(1,100)
+
+        ###rospy.init_node('block_player')
 
     def test_motors(self):
         the_range = np.sin(np.linspace(0.0, 2.0 * np.pi, 200)) * 0.5 + 0.5
@@ -520,5 +533,46 @@ class play_block():
                 behavioral_motor_commands[i, d] = behavioral_motor_commands[i-1, d] + behavioral_velocity_profile[i] / 30.0
 
         return behavioral_motor_commands
+
+    def command_position(self, ids, angles, speeds):
+        # check command validity
+        if len(ids) != len(angles):
+            logging.error("CommandPosition id and angle vector length do not match")
+            return
+        if len(speeds) > 0 and len(ids) != len(speeds):
+            logging.error("CommandPosition id and speed vector length do not match")
+            return
+        cangles = []
+        cspeeds = []
+        for i in range(0, len(ids)):
+            id = ids[i]
+            if id not in self.motors:
+                logging.error("CommandPosition id %d invalid" % id)
+                return
+            angle = angles[i]
+            cangle = self.chain.motors[id].registers["goal_pos"].fromsi(angle)
+            cangles.append(cangle)
+            if len(speeds) > 0:
+                speed = speeds[i]
+                cspeed = self.chain.motors[id].registers["moving_speed"].fromsi(speed)
+                cspeeds.append(cspeed)
+
+        if len(cspeeds) > 0:
+            self.chain.sync_write_pos_speed(ids, cangles, cspeeds)
+        else:
+            self.chain.sync_write_pos(ids, cangles)
+
+        pass
+
+
+
+
+
+
+
+
+
+
+
 
 
